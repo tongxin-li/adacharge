@@ -3,7 +3,7 @@ from collections import namedtuple
 import numpy as np
 import cvxpy as cp
 from acnportal.acnsim.interface import Interface, SessionInfo, InfrastructureInfo
-
+from scipy.interpolate import
 
 class InfeasibilityException(Exception):
     pass
@@ -378,6 +378,22 @@ def equal_share(rates, infrastructure, interface, **kwargs):
 def tou_energy_cost(rates, infrastructure, interface, **kwargs):
     current_prices = interface.get_prices(rates.shape[1])  # $/kWh
     return -current_prices @ aggregate_period_energy(rates, infrastructure, interface)
+
+
+def multienergy(rates, infrastructure, interface, **kwargs):
+    current_prices = get_prices(rates.shape[1])  # $/kWh
+    return current_prices @ aggregate_period_energy(rates, infrastructure, interface)
+
+
+def get_prices(length):
+    real_price = [28.01019, 25.78274, 24.43060, 24.33582, 26.29935, 32.10494, 39.04003, 37.47342, 28.13120,
+                       23.99327, 23.12956, 22.96696, 22.95283, 24.62308, 27.42406, 32.14537, 40.13047, 53.24215,
+                       67.88087, 68.51573, 54.03800, 43.23846, 36.24414, 31.53073]
+    x = np.linspace(0, 23, num=24, endpoint=True)
+    y = np.array(real_price)
+    xnew = np.linspace(0, 23, num=length, endpoint=True)
+    f = interp1d(x, y, kind='cubic')
+    new_real_price = f(xnew)
 
 
 def total_energy(rates, infrastructure, interface, **kwargs):
